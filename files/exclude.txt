@@ -1,0 +1,16 @@
+# These are the default rescript exclusions:
+/root/.cache/*
+/root/.local/share/Trash/*
+/root/.rescript/lock/*
+/root/.Trash
+/root/.Private
+/root/.ecryptfs
+
+# Custom:
+*_snapshots
+.@upload_cache
+@Recycle
+.papierkorb
+*TemporaryItems
+*DS_Store
+.DS_Store

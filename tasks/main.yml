@@ -1,0 +1,71 @@
+---
+
+# Clone Backup & Discovery Scripts from github
+- name: Clone lvm-restic-backup
+  get_url:
+    url: 'https://raw.githubusercontent.com/sebastian13/lvm-restic-backup/master/lvm-restic-backup.sh'
+    dest: /usr/bin/lvm-rescript
+    mode: 0700
+    force: yes
+  when: "'local' not in ansible_run_tags"
+
+# Alternatively, copy a local copy if tag 'local' is defined
+- name: Copy the lvm-restic-backup.sh
+  copy:
+    src: lvm-restic-backup.sh
+    dest: /usr/bin/lvm-rescript
+    mode: 0700
+  tags:
+    - never
+    - local
+
+- name: Download discovery script
+  get_url:
+    url: 'https://raw.githubusercontent.com/sebastian13/zabbix-template-rescript/master/scripts/rescript-lvm-discovery.pl'
+    dest: /etc/zabbix/scripts/
+    mode: 0700
+    force: yes
+  when: "'local' not in ansible_run_tags"
+
+# Alternatively, copy a local copy if tag 'local' is defined
+- name: Copy discovery script
+  copy:
+    src: "/Users/sebastian/Git Repositories/github.com/zabbix-template-rescript/scripts/rescript-lvm-discovery.pl"
+    dest: /etc/zabbix/scripts/
+    mode: 0700
+  tags:
+    - never
+    - local
+
+- name: Create restic directory
+  file:
+    path: /etc/restic
+    state: directory
+    mode: 0755
+
+- name: Copy exclusions file
+  copy:
+    src: "exclude.txt"
+    dest: "/etc/restic/exclude.txt"
+    mode: 0644
+    force: yes
+    backup: yes
+
+- name: Deploy lvm backup scripts
+  template:
+    src: 'lvm-restic.sh.j2'
+    dest: '/etc/restic/{{ item.name }}.sh'
+    mode: 0744
+    force: yes
+  with_items: '{{ lvm_rescript }}'
+
+- name: Create cronjob
+  cron:
+    name: "LVM Rescript Backup to repo {{ item.name }}"
+    minute: "{{ item.LVM_CRON_MINUTE | default ( 15 |random(seed=inventory_hostname )) }}"
+    hour: "{{ item.LVM_CRON_HOUR | default ( 5 |random(seed=inventory_hostname )) }}"
+    weekday: "{{ item.LVM_CRON_WEEKDAY | default ('*') }}"
+    job: "chronic /etc/restic/{{ item.name }}.sh"
+    state: "{{ item.LVM_CRON_STATE | default ('present') }}"
+  with_items: "{{ lvm_rescript }}"
+  no_log: false

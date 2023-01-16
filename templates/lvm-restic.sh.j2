@@ -1,0 +1,29 @@
+#!/bin/bash
+#{{ ansible_managed }}
+
+set -e
+
+healthcheck="{{ item.LVM_HEALTHCHECK_URL | trim }}"
+
+# Ping at the beginning
+curl -fsS -m 10 --retry 5 -o /dev/null ${healthcheck}/start || true
+
+{% if item.LVM_BACKUP_USB|default(false)|bool %}
+# Check mountpoint
+ls /mnt/usb/XEN-BACKUP || exit 1
+sleep 5
+
+# Unlock repository
+rescript {{ item.name | trim }} unlock
+
+{% endif %}
+{% if item.LVM_CHECK|default(false)|bool %}
+# Check the data
+rescript {{ item.name | trim }} check --read-data
+
+{% endif %}
+# Run the actual backup
+lvm-rescript {{ item.name | trim }} {{ item.LVM_BACKUP_TYPE | default(LVM_BACKUP_TYPE) }} {{ item.LVM_BACKUP_LIST | default(LVM_BACKUP_LIST) }}
+
+# Ping success
+curl -fsS -m 10 --retry 5 -o /dev/null ${healthcheck} || true
