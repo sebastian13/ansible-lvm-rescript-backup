@@ -19,7 +19,7 @@ rescript {{ item.name | trim }} unlock
 {% endif %}
 {% if item.LVM_CHECK|default(false)|bool %}
 # Check the data
-rescript {{ item.name | trim }} check --read-data
+rescript {{ item.name | trim }} check --read-data-subset=2.5%
 
 {% endif %}
 # Run the actual backup

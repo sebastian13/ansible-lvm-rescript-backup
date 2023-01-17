@@ -59,13 +59,13 @@
     force: yes
   with_items: '{{ lvm_rescript }}'
 
-- name: Create cronjob
+- name: Create lvm cronjobs
   cron:
     name: "LVM Rescript Backup to repo {{ item.name }}"
     minute: "{{ item.LVM_CRON_MINUTE | default ( 15 |random(seed=inventory_hostname )) }}"
     hour: "{{ item.LVM_CRON_HOUR | default ( 5 |random(seed=inventory_hostname )) }}"
     weekday: "{{ item.LVM_CRON_WEEKDAY | default ('*') }}"
-    job: "chronic /etc/restic/{{ item.name }}.sh"
+    job: "{{ item.LVM_CRON_JOB | default ( 'chronic /etc/restic/' + item.name + '.sh' ) }}"
     state: "{{ item.LVM_CRON_STATE | default ('present') }}"
   with_items: "{{ lvm_rescript }}"
   no_log: false
