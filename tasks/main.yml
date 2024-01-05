@@ -19,6 +19,12 @@
     - never
     - local
 
+- name: Create /etc/zabbix/scripts
+  file:
+    path: /etc/zabbix/scripts
+    state: directory
+    mode: '0755'
+
 - name: Download discovery script
   get_url:
     url: 'https://raw.githubusercontent.com/sebastian13/zabbix-template-rescript/master/scripts/rescript-lvm-discovery.pl'
