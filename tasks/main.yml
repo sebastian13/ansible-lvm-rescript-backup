@@ -36,7 +36,7 @@
 # Alternatively, copy a local copy if tag 'local' is defined
 - name: Copy discovery script
   copy:
-    src: "/Users/sebastian/Git Repositories/github.com/zabbix-template-rescript/scripts/rescript-lvm-discovery.pl"
+    src: rescript-lvm-discovery.pl
     dest: /etc/zabbix/scripts/
     mode: 0700
   tags:
