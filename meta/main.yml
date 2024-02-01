@@ -1,0 +1,19 @@
+---
+
+galaxy_info:
+  role_name: "lvm-rescript-backup"
+  author: "Sebastian Plocek"
+  description: "Deploys lvm-restic-backup.sh, a bash script to backup locical volumes using restic and rescript."
+  company: "PG IT Consulting eG"
+  min_ansible_version: 2.1
+
+  platforms:
+    - name: "Debian"
+      versions:
+        - "bullseye"
+        - "bookworm"
+
+  galaxy_tags:
+    - "backup"
+    - "restic"
+    - "rescript"

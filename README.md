@@ -1,58 +1,82 @@
 # Ansible LVM-Rescript-Backup
 
-### How to use?
+This role deploys `lvm-restic-backup.sh`, a bash script to backup locical volumes using restic and rescript.
 
-1. Create a playbook `lvm-rescript-backup.yml`
+## Requirements
 
-	```yaml
-	---
-	- hosts: hypervisors
-	  become: true
+- restic
+- rescript
+- pigz
+- awk
+- pv
+- jq
+- python3-humanfriendly
 
-	  tasks:
-	    - name: Install Restic
-	      ansible.builtin.import_role:
-	      	name: restic
+## Example Playbook
 
-	    - name: Install Rescript
-	      ansible.builtin.import_role:
-	      	name: rescript
+```yaml
+---
 
-	    - name: Setup LVM-Rescript-Backup
-	      ansible.builtin.import_role:
-	      	name: lvm-rescript-backup
-	```
+- name: LVM Rescript backup-filelevel
+  hosts: hypervisors
+  become: true
 
-1. Define `restic_repos:` & `lvm_rescript:` in a host_vars file.
+  roles:
+    - sebastian13.restic
+    - sebsatian13.rescript
+    - sebastian13.lvm-rescript-backup
 
-	```yaml
-	restic_repos:
-	  - name: nas00-filelevel
-	    RESTIC_REPO: 's3:https://asdf.at:123456/mybucket'
-	    RESTIC_PASSWORD: 'secure'
-	    AWS_ID: 'asdf'
-	    AWS_KEY: 'secure'
-	    CRON_STATE: 'absent'
-	lvm_rescript:
-	  - name: nas00-filelevel
-	    LVM_BACKUP_TYPE: "file-level-backup"
-	    LVM_BACKUP_LIST: "/etc/restic/backup-filelevel.txt"
-	    LVM_CRON_HOUR: '22'
-	    LVM_CRON_WEEKDAY: 'MON-SAT'
-	    LVM_HEALTHCHECK_URL: 'https://healthchecks.example.com/123456'
-	```
+  vars:
+    restic_repos:
+      - name: example-filelevel
+        restic_repo: 's3:https://...'
+        restic_password: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              65616131343239383...36333833432393830
+        restic_aws_id: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              33326165343464663...64306164643562363
+        restic_aws_key: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              32356139333035363...33665666403232353
+        rescript_email: "...@example.com"
+      - name: usb-blocklevel-gz
+        restic_password: !vault |
+              $ANSIBLE_VAULT;1.1;AES256
+              65616131343239383...66462378322393830
+        restic_repo: '/mnt/usb/backup/restic/usb-blocklevel-gz'
 
-1. Think about encrypting the passwords:
+    rescript_cronjobs:
+      - name: example-filelevel-cleanup
+        repo_name: 'example-filelevel'
+        cron_hour: '18'
+        cron_weekday: 'SUN'
+        rescript_command: 'cleanup --email --log'
 
-   ```bash
-   ansible-vault encrypt_string --stdin-name 'RESTIC_PASSWORD'
-   ```
+    lvm_rescript:
+      - name: example-filelevel
+        LVM_BACKUP_TYPE: "file-level-backup"
+        LVM_BACKUP_LIST: "/etc/restic/backup-filelevel.txt"
+        LVM_CRON_HOUR: '22'
+        LVM_CRON_WEEKDAY: 'MON-SAT'
+        LVM_HEALTHCHECK_URL: 'https://healthchecks.example.com/ping/...'
+      - name: usb-blocklevel-gz
+        LVM_BACKUP_USB: true
+        LVM_CHECK: true
+        LVM_BACKUP_TYPE: 'block-level-gz-backup'
+        LVM_BACKUP_LIST: '/etc/restic/backup-blocklevel-gz-usb.txt'
+        LVM_CRON_STATE: 'absent'
+        LVM_HEALTHCHECK_URL: 'https://healthchecks.example.com/ping/...'
+```
 
-1. Run the playbook
+Passwords and secret keys should be encrypted using ansible-vault
 
-	```bash
-	ansible-playbook lvm-rescript-backup.yml --ask-vault-pass
+```bash
+ansible-vault encrypt_string --stdin-name 'RESTIC_PASSWORD'
+```
 
-	# Deploy to certain servers & start at a certain task
-	ansible-playbook lvm-rescript-backup.yml --limit xen00 --start-at-task "Deploy lvm backup scripts"
-	```
+The playbook must then be run as follows:
+
+```bash
+ansible-playbook lvm-rescript-backup.yml --ask-vault-pass
+```
