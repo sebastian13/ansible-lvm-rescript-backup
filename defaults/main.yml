@@ -1,0 +1,2 @@
+LVM_BACKUP_TYPE: "file-level-backup"
+LVM_BACKUP_LIST: "/etc/restic/backup-filelevel.txt"
