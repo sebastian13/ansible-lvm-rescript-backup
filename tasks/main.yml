@@ -2,76 +2,76 @@
 
 # Clone Backup & Discovery Scripts from github
 - name: Clone lvm-restic-backup
-  get_url:
+  ansible.builtin.get_url:
     url: 'https://raw.githubusercontent.com/sebastian13/lvm-restic-backup/master/lvm-restic-backup.sh'
     dest: /usr/bin/lvm-rescript
-    mode: 0700
-    force: yes
+    mode: "0700"
+    force: true
   when: "'local' not in ansible_run_tags"
 
 # Alternatively, copy a local copy if tag 'local' is defined
 - name: Copy the lvm-restic-backup.sh
-  copy:
+  ansible.builtin.copy:
     src: lvm-restic-backup.sh
     dest: /usr/bin/lvm-rescript
-    mode: 0700
+    mode: "0700"
   tags:
     - never
     - local
 
 - name: Create /etc/zabbix/scripts
-  file:
+  ansible.builtin.file:
     path: /etc/zabbix/scripts
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Download discovery script
-  get_url:
+  ansible.builtin.get_url:
     url: 'https://raw.githubusercontent.com/sebastian13/zabbix-template-rescript/master/scripts/rescript-lvm-discovery.pl'
     dest: /etc/zabbix/scripts/
-    mode: 0700
-    force: yes
+    mode: "0700"
+    force: true
   when: "'local' not in ansible_run_tags"
 
 # Alternatively, copy a local copy if tag 'local' is defined
 - name: Copy discovery script
-  copy:
+  ansible.builtin.copy:
     src: rescript-lvm-discovery.pl
     dest: /etc/zabbix/scripts/
-    mode: 0700
+    mode: "0700"
   tags:
     - never
     - local
 
 - name: Create restic directory
-  file:
+  ansible.builtin.file:
     path: /etc/restic
     state: directory
-    mode: 0755
+    mode: "0755"
 
 - name: Copy exclusions file
-  copy:
+  ansible.builtin.copy:
     src: "exclude.txt"
     dest: "/etc/restic/exclude.txt"
-    mode: 0644
-    force: yes
-    backup: yes
+    mode: "0644"
+    force: true
+    backup: true
 
 - name: Deploy lvm backup scripts
-  template:
+  ansible.builtin.template:
     src: 'lvm-restic.sh.j2'
-    dest: '/etc/restic/{{ item.name }}.sh'
-    mode: 0744
-    force: yes
+    dest: '/etc/restic/{{ item.rescript_repo_name }}.sh'
+    mode: "0744"
+    force: true
   with_items: '{{ lvm_rescript }}'
 
 - name: Create lvm cronjobs
-  cron:
-    name: "LVM Rescript Backup to repo {{ item.name }}"
-    minute: "{{ item.LVM_CRON_MINUTE | default ( 15 |random(seed=inventory_hostname )) }}"
-    hour: "{{ item.LVM_CRON_HOUR | default ( 5 |random(seed=inventory_hostname )) }}"
-    weekday: "{{ item.LVM_CRON_WEEKDAY | default ('*') }}"
-    job: "{{ item.LVM_CRON_JOB | default ( 'chronic /etc/restic/' + item.name + '.sh' ) }}"
-    state: "{{ item.LVM_CRON_STATE | default ('present') }}"
+  ansible.builtin.cron:
+    name: "LVM Rescript Backup to repo {{ item.rescript_repo_name }}"
+    minute: "{{ item.rescript_lvm_cron_minute | default(15 | random(seed=inventory_hostname)) }}"
+    hour: "{{ item.rescript_lvm_cron_hour | default(5 | random(seed=inventory_hostname)) }}"
+    weekday: "{{ item.rescript_lvm_cron_weekday | default('*') }}"
+    job: "{{ item.rescript_lvm_cron_job | default('chronic /etc/restic/' + item.rescript_repo_name + '.sh') }}"
+    state: "{{ item.rescript_lvm_cron_state | default('present') }}"
   with_items: "{{ lvm_rescript }}"
   no_log: false

@@ -23,8 +23,8 @@ This role deploys `lvm-restic-backup.sh`, a bash script to backup locical volume
 
   roles:
     - sebastian13.restic
-    - sebsatian13.rescript
-    - sebastian13.lvm-rescript-backup
+    - sebastian13.rescript
+    - sebastian13.lvm_rescript_backup
 
   vars:
     restic_repos:
@@ -54,19 +54,21 @@ This role deploys `lvm-restic-backup.sh`, a bash script to backup locical volume
         rescript_command: 'cleanup --email --log'
 
     lvm_rescript:
-      - name: example-filelevel
-        LVM_BACKUP_TYPE: "file-level-backup"
-        LVM_BACKUP_LIST: "/etc/restic/backup-filelevel.txt"
-        LVM_CRON_HOUR: '22'
-        LVM_CRON_WEEKDAY: 'MON-SAT'
-        LVM_HEALTHCHECK_URL: 'https://healthchecks.example.com/ping/...'
-      - name: usb-blocklevel-gz
-        LVM_BACKUP_USB: true
-        LVM_CHECK: true
-        LVM_BACKUP_TYPE: 'block-level-gz-backup'
-        LVM_BACKUP_LIST: '/etc/restic/backup-blocklevel-gz-usb.txt'
-        LVM_CRON_STATE: 'absent'
-        LVM_HEALTHCHECK_URL: 'https://healthchecks.example.com/ping/...'
+      - name: Backup to Example
+        rescript_repo_name: "example-filelevel"
+        rescript_lvm_method: "file-level-backup"
+        rescript_lvm_list: "/etc/restic/backup-filelevel.txt"
+        rescript_lvm_cron_hour: '22'
+        rescript_lvm_cron_weekday: 'MON-SAT'
+        rescript_lvm_healthcheck_url: 'https://healthchecks.example.com/ping/...'
+      - name: Backup to USB
+        rescript_repo_name: "usb-blocklevel-gz"
+        rescript_lvm_usb: true
+        rescript_lvm_check: true
+        rescript_lvm_method: 'block-level-gz-backup'
+        rescript_lvm_list: '/etc/restic/backup-blocklevel-gz-usb.txt'
+        rescript_lvm_cron_state: 'absent'
+        rescript_lvm_healthcheck_url: 'https://healthchecks.example.com/ping/...'
 ```
 
 Passwords and secret keys should be encrypted using ansible-vault

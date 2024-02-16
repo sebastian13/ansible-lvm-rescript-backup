@@ -1,11 +1,13 @@
 ---
 
 galaxy_info:
-  role_name: "lvm-rescript-backup"
+  role_name: "lvm_rescript_backup"
+  namespace: "sebastian13"
   author: "Sebastian Plocek"
   description: "Deploys lvm-restic-backup.sh, a bash script to backup locical volumes using restic and rescript."
   company: "PG IT Consulting eG"
-  min_ansible_version: 2.1
+  min_ansible_version: "2.1"
+  license: "Apache 2.0"
 
   platforms:
     - name: "Debian"

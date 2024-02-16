@@ -3,27 +3,32 @@
 
 set -e
 
-healthcheck="{{ item.LVM_HEALTHCHECK_URL | trim }}"
+{% if item.rescript_lvm_healthcheck_url %}
+# Set the healthcheck URL
+healthcheck="{{ item.rescript_lvm_healthcheck_url | trim }}"
 
 # Ping at the beginning
 curl -fsS -m 10 --retry 5 -o /dev/null ${healthcheck}/start || true
 
-{% if item.LVM_BACKUP_USB|default(false)|bool %}
+{% endif %}
+{% if item.rescript_lvm_usb|default(false)|bool %}
 # Check mountpoint
 ls /mnt/usb/XEN-BACKUP || exit 1
 sleep 5
 
 # Unlock repository
-rescript {{ item.name | trim }} unlock
+rescript {{ item.rescript_repo_name | trim }} unlock
 
 {% endif %}
-{% if item.LVM_CHECK|default(false)|bool %}
+{% if item.rescript_lvm_check|default(false)|bool %}
 # Check the data
-rescript {{ item.name | trim }} check --read-data-subset=2.5%
+rescript {{ item.rescript_repo_name | trim }} check --read-data-subset=2.5%
 
 {% endif %}
 # Run the actual backup
-lvm-rescript {{ item.name | trim }} {{ item.LVM_BACKUP_TYPE | default(LVM_BACKUP_TYPE) }} {{ item.LVM_BACKUP_LIST | default(LVM_BACKUP_LIST) }}
+lvm-rescript {{ item.rescript_repo_name | trim }} {{ item.rescript_lvm_method | default(rescript_lvm_method) }} {{ item.rescript_lvm_list | default(rescript_lvm_list) }}
 
+{% if item.rescript_lvm_healthcheck_url %}
 # Ping success
 curl -fsS -m 10 --retry 5 -o /dev/null ${healthcheck} || true
+{% endif %}
