@@ -7,6 +7,7 @@ rescript_lvm_check: false
 
 ## Other available variables
 # rescript_repo_name: ""
+# rescript_repo: ""
 # rescript_lvm_cron_minute: "5"
 # rescript_lvm_cron_hour: "8"
 # rescript_lvm_cron_weekday: "MON-FRI"

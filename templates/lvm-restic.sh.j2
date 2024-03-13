@@ -13,7 +13,7 @@ curl -fsS -m 10 --retry 5 -o /dev/null ${healthcheck}/start || true
 {% endif %}
 {% if item.rescript_lvm_usb|default(false)|bool %}
 # Check mountpoint
-ls /mnt/usb/XEN-BACKUP || exit 1
+ls {{ item.rescript_repo | trim }} || exit 1
 sleep 5
 
 # Unlock repository
